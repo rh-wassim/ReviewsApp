@@ -1,0 +1,13 @@
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/storage/logs/*.log
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/database/database.sqlite
+backend/bootstrap/cache/*.php
+.DS_Store
+.idea/
+.vscode/
+.env
