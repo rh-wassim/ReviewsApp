@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Connexion - Avis</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="container" style="max-width: 420px;">
+    <h1>Avis</h1>
+    <p class="muted" style="margin-bottom: 16px;">Connectez-vous ou créez un compte pour continuer.</p>
+
+    <h2>Connexion</h2>
+    <form id="login-form">
+      <input type="email" name="email" placeholder="E-mail" required />
+      <input type="password" name="password" placeholder="Mot de passe" required />
+      <button type="submit">Se connecter</button>
+    </form>
+
+    <h2>Inscription</h2>
+    <form id="register-form">
+      <input type="text" name="name" placeholder="Nom complet" required />
+      <input type="email" name="email" placeholder="E-mail" required />
+      <input type="password" name="password" placeholder="Mot de passe (min. 6)" minlength="6" required />
+      <input type="password" name="password_confirmation" placeholder="Confirmer le mot de passe" required />
+      <button type="submit">S'inscrire</button>
+    </form>
+
+    <div id="msg"></div>
+
+    <p class="small" style="margin-top: 16px;">
+      Démo : <code>admin@example.com</code> / <code>password</code> &nbsp;·&nbsp;
+      <code>user@example.com</code> / <code>password</code>
+    </p>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    const msg = document.getElementById('msg');
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.innerHTML = '';
+      const fd = new FormData(e.target);
+      try {
+        const data = await apiFetch('/login', {
+          method: 'POST', auth: false,
+          body: { email: fd.get('email'), password: fd.get('password') }
+        });
+        setAuth(data.user, data.token);
+        window.location.href = 'reviews.html';
+      } catch (err) {
+        showError(msg, err.message);
+      }
+    });
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.innerHTML = '';
+      const fd = new FormData(e.target);
+      try {
+        const data = await apiFetch('/register', {
+          method: 'POST', auth: false,
+          body: {
+            name: fd.get('name'),
+            email: fd.get('email'),
+            password: fd.get('password'),
+            password_confirmation: fd.get('password_confirmation'),
+          }
+        });
+        setAuth(data.user, data.token);
+        window.location.href = 'reviews.html';
+      } catch (err) {
+        const errors = err.data?.errors
+          ? Object.values(err.data.errors).flat().join('<br>')
+          : err.message;
+        showError(msg, errors);
+      }
+    });
+  </script>
+</body>
+</html>
