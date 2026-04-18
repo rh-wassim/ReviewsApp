@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Avis - Liste</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <nav>
+    <div>
+      <a href="reviews.html">Avis</a>
+      <a href="add-review.html">Ajouter un avis</a>
+      <a href="stats.html">Statistiques</a>
+    </div>
+    <div>
+      <span id="who" class="small" style="color:#d1d5db;margin-right:12px;"></span>
+      <a href="#" id="logout">Déconnexion</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Avis clients</h1>
+    <div id="msg"></div>
+    <div id="list" class="muted">Chargement...</div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+    const u = currentUser();
+    const roleFr = r => r === 'admin' ? 'administrateur' : 'utilisateur';
+    document.getElementById('who').textContent = u ? `${u.name} (${roleFr(u.role)})` : '';
+    document.getElementById('logout').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+
+    const msg = document.getElementById('msg');
+    const list = document.getElementById('list');
+
+    const sentimentFr = { positive: 'positif', negative: 'négatif', neutral: 'neutre' };
+
+    function badge(sentiment) {
+      const cls = ['positive','negative','neutral'].includes(sentiment) ? sentiment : 'neutral';
+      const label = sentimentFr[sentiment] ?? 'en attente';
+      return `<span class="badge ${cls}">${label}</span>`;
+    }
+
+    async function load() {
+      try {
+        const { data } = await apiFetch('/reviews');
+        if (!data.length) { list.innerHTML = '<p class="muted">Aucun avis pour le moment.</p>'; return; }
+        list.innerHTML = data.map(r => `
+          <div class="card">
+            <div>
+              ${badge(r.sentiment)}
+              <span class="small">score : ${r.score ?? '-'} · par ${r.user?.name ?? 'utilisateur #'+r.user_id} · ${new Date(r.created_at).toLocaleString('fr-FR')}</span>
+            </div>
+            <p style="margin:8px 0;">${escapeHtml(r.content)}</p>
+            <div>${(r.topics||[]).map(t => `<span class="badge topic">${t}</span>`).join('')}</div>
+            <div class="row" style="margin-top:10px;">
+              <button onclick="edit(${r.id})">Modifier</button>
+              <button class="danger" onclick="del(${r.id})">Supprimer</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        if (err.status === 401) { logout(); return; }
+        showError(msg, err.message);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function del(id) {
+      if (!confirm('Supprimer cet avis ?')) return;
+      try {
+        await apiFetch(`/reviews/${id}`, { method: 'DELETE' });
+        showSuccess(msg, 'Supprimé.');
+        load();
+      } catch (err) { showError(msg, err.message); }
+    }
+
+    async function edit(id) {
+      const content = prompt('Nouveau contenu :');
+      if (!content) return;
+      try {
+        await apiFetch(`/reviews/${id}`, { method: 'PUT', body: { content } });
+        showSuccess(msg, 'Mis à jour.');
+        load();
+      } catch (err) { showError(msg, err.message); }
+    }
+
+    load();
+  </script>
+</body>
+</html>
