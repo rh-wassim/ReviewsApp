@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Ajouter un avis - Avis</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <nav>
+    <div>
+      <a href="reviews.html">Avis</a>
+      <a href="add-review.html">Ajouter un avis</a>
+      <a href="stats.html">Statistiques</a>
+    </div>
+    <div><a href="#" id="logout">Déconnexion</a></div>
+  </nav>
+
+  <div class="container">
+    <h1>Ajouter un avis</h1>
+    <p class="muted" style="margin-bottom:16px;">
+      Le sentiment, le score et les thèmes sont détectés automatiquement par le service d'IA lors de l'enregistrement.
+    </p>
+
+    <form id="form">
+      <textarea name="content" placeholder="Rédigez votre avis client ici..." required minlength="3"></textarea>
+      <div class="row">
+        <button type="submit">Enregistrer l'avis</button>
+        <button type="button" id="analyze-btn" style="background:#10b981;">Aperçu de l'analyse (/api/analyze)</button>
+      </div>
+    </form>
+
+    <div id="preview"></div>
+    <div id="msg"></div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+    document.getElementById('logout').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+
+    const form = document.getElementById('form');
+    const msg  = document.getElementById('msg');
+    const preview = document.getElementById('preview');
+
+    const sentimentFr = { positive: 'positif', negative: 'négatif', neutral: 'neutre' };
+
+    document.getElementById('analyze-btn').addEventListener('click', async () => {
+      msg.innerHTML = ''; preview.innerHTML = '';
+      const text = form.content.value.trim();
+      if (text.length < 3) { showError(msg, 'Écrivez au moins 3 caractères.'); return; }
+      try {
+        const data = await apiFetch('/analyze', { method: 'POST', body: { text } });
+        preview.innerHTML = `
+          <div class="card">
+            <strong>Aperçu</strong><br>
+            <span class="badge ${data.sentiment}">${sentimentFr[data.sentiment] ?? data.sentiment}</span>
+            <span class="small">score : ${data.score}</span><br>
+            ${(data.topics||[]).map(t => `<span class="badge topic">${t}</span>`).join('') || '<span class="small">aucun thème détecté</span>'}
+          </div>`;
+      } catch (err) { showError(msg, err.message); }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.innerHTML = '';
+      try {
+        const r = await apiFetch('/reviews', {
+          method: 'POST',
+          body: { content: form.content.value.trim() }
+        });
+        showSuccess(msg, `Enregistré. Sentiment : ${sentimentFr[r.sentiment] ?? r.sentiment} (score ${r.score}).`);
+        form.reset(); preview.innerHTML = '';
+      } catch (err) {
+        const errors = err.data?.errors ? Object.values(err.data.errors).flat().join('<br>') : err.message;
+        showError(msg, errors);
+      }
+    });
+  </script>
+</body>
+</html>

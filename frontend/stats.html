@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Statistiques - Avis</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <nav>
+    <div>
+      <a href="reviews.html">Avis</a>
+      <a href="add-review.html">Ajouter un avis</a>
+      <a href="stats.html">Statistiques</a>
+    </div>
+    <div><a href="#" id="logout">Déconnexion</a></div>
+  </nav>
+
+  <div class="container">
+    <h1>Tableau de bord</h1>
+    <div id="msg"></div>
+
+    <div class="stats" id="stats">Chargement...</div>
+
+    <h2>Top 3 thèmes</h2>
+    <div id="topics" class="muted">Chargement...</div>
+
+    <h2>Avis récents</h2>
+    <div id="recent" class="muted">Chargement...</div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+    document.getElementById('logout').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+
+    const msg = document.getElementById('msg');
+    const sentimentFr = { positive: 'positif', negative: 'négatif', neutral: 'neutre' };
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function load() {
+      try {
+        const [stats, topics, recent] = await Promise.all([
+          apiFetch('/dashboard/stats'),
+          apiFetch('/dashboard/topics'),
+          apiFetch('/dashboard/recent-reviews'),
+        ]);
+
+        document.getElementById('stats').innerHTML = `
+          <div class="stat"><div class="value">${stats.total}</div><div class="label">Total d'avis</div></div>
+          <div class="stat"><div class="value">${stats.positive_percent}%</div><div class="label">Positifs</div></div>
+          <div class="stat"><div class="value">${stats.negative_percent}%</div><div class="label">Négatifs</div></div>
+          <div class="stat"><div class="value">${stats.neutral_percent}%</div><div class="label">Neutres</div></div>
+          <div class="stat"><div class="value">${stats.average_score}</div><div class="label">Note moyenne</div></div>
+        `;
+
+        const t = topics.data;
+        document.getElementById('topics').innerHTML = t.length
+          ? t.map(x => `<span class="badge topic">${x.topic} (${x.count})</span>`).join(' ')
+          : '<p class="muted">Aucun thème détecté pour le moment.</p>';
+
+        const r = recent.data;
+        document.getElementById('recent').innerHTML = r.length
+          ? r.map(x => `
+            <div class="card">
+              <span class="badge ${x.sentiment||'neutral'}">${sentimentFr[x.sentiment] ?? 'en attente'}</span>
+              <span class="small">score : ${x.score ?? '-'} · par ${x.user?.name ?? 'utilisateur #'+x.user_id} · ${new Date(x.created_at).toLocaleString('fr-FR')}</span>
+              <p style="margin-top:6px;">${escapeHtml(x.content)}</p>
+            </div>`).join('')
+          : '<p class="muted">Aucun avis récent.</p>';
+
+      } catch (err) {
+        if (err.status === 401) { logout(); return; }
+        showError(msg, err.message);
+      }
+    }
+    load();
+  </script>
+</body>
+</html>
