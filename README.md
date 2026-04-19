@@ -126,7 +126,7 @@ curl http://localhost:8000/api/dashboard/stats -H "Authorization: Bearer $TOKEN"
 
 Consulte [API.md](API.md) pour la documentation complète des endpoints et [REPORT.md](REPORT.md) pour le rapport du projet.
 
-## Auteurs
+## Auteurs:
 
-- **Wassim RHILANE** — Backend (squelette Laravel, reviews, IA HuggingFace, base de données, tests)
-- **Ilyasse DBIZA** — Authentification (Sanctum, rôles), dashboard, frontend, documentation
+- **Wassim RHILANE** 
+- **Ilyasse DBIZA** 
