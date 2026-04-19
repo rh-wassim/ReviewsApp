@@ -68,21 +68,6 @@ php artisan migrate --seed
 php artisan serve    # http://localhost:8000
 ```
 
-### Utiliser MySQL au lieu de SQLite
-
-Dans `.env` :
-
-```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=reviewsapp
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-Puis : `php artisan migrate:fresh --seed`.
-
 ## Installation (frontend)
 
 Ouvre simplement `frontend/login.html` dans le navigateur, ou sers les fichiers :
