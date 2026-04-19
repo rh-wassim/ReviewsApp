@@ -1,18 +1,18 @@
-# ReviewsApp — AI Customer Review Analysis
+# ReviewsApp — Analyse IA des avis clients
 
-Laravel 12 REST API + vanilla HTML/CSS/JS frontend. Reviews are automatically analyzed with a Hugging Face sentiment model; a rule-based fallback guarantees the app works offline.
+API REST Laravel 12 + frontend HTML/CSS/JS. Les avis sont analysés automatiquement via un modèle de sentiment Hugging Face ; un fallback à base de règles garantit que l'application fonctionne même hors ligne.
 
-## Stack
+## Stack technique
 
-- Backend: Laravel 12, Sanctum (token auth), SQLite
-- AI: Hugging Face Inference API (`cardiffnlp/twitter-roberta-base-sentiment-latest`) + rule-based fallback
-- Frontend: static HTML/CSS/JS with `fetch`
+- Backend : Laravel 12, Sanctum (authentification par token), SQLite
+- IA : API d'inférence Hugging Face (`cardiffnlp/twitter-roberta-base-sentiment-latest`) + fallback basé sur des règles
+- Frontend : HTML/CSS/JS statique avec `fetch`
 
-## Project structure
+## Structure du projet
 
 ```
 ReviewsApp/
-├── backend/                 # Laravel 12 API
+├── backend/                 # API Laravel 12
 │   ├── app/
 │   │   ├── Http/Controllers/Api/   # Auth, Review, Analyze, Dashboard
 │   │   ├── Http/Requests/          # Form Requests (validation)
@@ -41,22 +41,22 @@ ReviewsApp/
 └── README.md
 ```
 
-## Quick start (after cloning)
+## Démarrage rapide (après clonage)
 
-Requirements: PHP 8.2+, Composer, Python 3 (for the static frontend server).
+Prérequis : PHP 8.2+, Composer, Python 3 (pour servir le frontend statique).
 
 ```bash
-./setup.sh    # installs deps, creates .env + SQLite DB, runs migrations + seeders
-./start.sh    # runs the API (:8000) and the frontend (:5500) together
+./setup.sh    # installe les dépendances, crée le .env + la base SQLite, lance migrations + seeders
+./start.sh    # lance l'API (:8000) et le frontend (:5500) en même temps
 ```
 
-Then open http://localhost:5500/login.html and log in with `admin@example.com` / `password`.
+Ouvre ensuite http://localhost:5500/login.html et connecte-toi avec `admin@example.com` / `password`.
 
-To use a Hugging Face model instead of the rule-based fallback, add `HUGGINGFACE_API_TOKEN=hf_xxx` to `backend/.env`.
+Pour utiliser un vrai modèle Hugging Face plutôt que le fallback, ajoute `HUGGINGFACE_API_TOKEN=hf_xxx` dans `backend/.env`.
 
-## Manual setup (backend)
+## Installation manuelle (backend)
 
-If you prefer to run the steps yourself:
+Si tu préfères exécuter les étapes une par une :
 
 ```bash
 cd backend
@@ -68,9 +68,9 @@ php artisan migrate --seed
 php artisan serve    # http://localhost:8000
 ```
 
-### Using MySQL instead of SQLite
+### Utiliser MySQL au lieu de SQLite
 
-In `.env`:
+Dans `.env` :
 
 ```
 DB_CONNECTION=mysql
@@ -81,62 +81,67 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-Then: `php artisan migrate:fresh --seed`.
+Puis : `php artisan migrate:fresh --seed`.
 
-## Setup (frontend)
+## Installation (frontend)
 
-Just open `frontend/login.html` in the browser, or serve it:
+Ouvre simplement `frontend/login.html` dans le navigateur, ou sers les fichiers :
 
 ```bash
 cd frontend
 python3 -m http.server 5500
-# open http://localhost:5500/login.html
+# ouvrir http://localhost:5500/login.html
 ```
 
-Edit `frontend/js/api.js` if your Laravel server is not on `http://localhost:8000`.
+Modifie `frontend/js/api.js` si ton serveur Laravel n'est pas sur `http://localhost:8000`.
 
-## Demo accounts (from seeder)
+## Comptes de démonstration (créés par le seeder)
 
-| Email               | Password | Role  |
-|---------------------|----------|-------|
-| admin@example.com   | password | admin |
-| user@example.com    | password | user  |
+| Email               | Mot de passe | Rôle  |
+|---------------------|--------------|-------|
+| admin@example.com   | password     | admin |
+| user@example.com    | password     | user  |
 
-## Hugging Face configuration
+## Configuration Hugging Face
 
-- `HUGGINGFACE_API_TOKEN` — personal access token from https://huggingface.co/settings/tokens
-- `HUGGINGFACE_MODEL` — defaults to `cardiffnlp/twitter-roberta-base-sentiment-latest`
+- `HUGGINGFACE_API_TOKEN` — token personnel depuis https://huggingface.co/settings/tokens
+- `HUGGINGFACE_MODEL` — valeur par défaut : `cardiffnlp/twitter-roberta-base-sentiment-latest`
 
-If the token is missing or the API times out / errors, the app logs a warning and uses rule-based fallback. The user-facing API always returns a valid sentiment.
+Si le token est absent, si l'API dépasse le timeout ou renvoie une erreur, l'application logge un avertissement et bascule sur le fallback local. L'API publique retourne toujours un sentiment valide.
 
-## Verify it works
+## Vérifier que tout fonctionne
 
 ```bash
-# Register
+# Inscription
 curl -X POST http://localhost:8000/api/register \
   -H 'Content-Type: application/json' \
   -d '{"name":"Test","email":"t@t.com","password":"secret123","password_confirmation":"secret123"}'
 
-# Login (save token from response)
+# Connexion (récupérer le token depuis la réponse)
 TOKEN=$(curl -s -X POST http://localhost:8000/api/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"user@example.com","password":"password"}' | jq -r .token)
 
-# Manual analyze endpoint
+# Endpoint d'analyse manuelle
 curl -X POST http://localhost:8000/api/analyze \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"text":"Great product, fast delivery!"}'
+  -d '{"text":"Super produit, livraison rapide !"}'
 
-# Create review (auto-analyzed)
+# Création d'un avis (analyse automatique)
 curl -X POST http://localhost:8000/api/reviews \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"content":"Terrible quality, broke immediately."}'
+  -d '{"content":"Qualité catastrophique, cassé dès la première utilisation."}'
 
-# List reviews
+# Liste des avis
 curl http://localhost:8000/api/reviews -H "Authorization: Bearer $TOKEN"
 
-# Dashboard stats
+# Statistiques du tableau de bord
 curl http://localhost:8000/api/dashboard/stats -H "Authorization: Bearer $TOKEN"
 ```
 
-See [API.md](API.md) for the full endpoint reference and [REPORT.md](REPORT.md) for the project report.
+Consulte [API.md](API.md) pour la documentation complète des endpoints et [REPORT.md](REPORT.md) pour le rapport du projet.
+
+## Auteurs
+
+- **Wassim RHILANE** — Backend (squelette Laravel, reviews, IA HuggingFace, base de données, tests)
+- **Ilyasse DBIZA** — Authentification (Sanctum, rôles), dashboard, frontend, documentation
