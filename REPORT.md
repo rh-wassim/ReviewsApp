@@ -117,16 +117,8 @@ curl -i -X DELETE -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/re
 - `admin@example.com` / `password` (rôle : admin)
 - `user@example.com`  / `password` (rôle : user)
 
-## 6. Captures d'écran
 
-*(À remplacer par de vraies captures prises lors de l'exécution.)*
-
-- **Page de connexion** — `frontend/login.html`, formulaires inscription et connexion côte à côte.
-- **Liste des avis** — badges de sentiment colorés (vert / gris / rouge), pastilles de thèmes, boutons modifier/supprimer.
-- **Ajout d'un avis** — bouton « Aperçu de l'analyse » qui appelle `POST /api/analyze` en direct.
-- **Tableau de bord** — cartes de pourcentages, top 3 des thèmes, panneau des avis récents.
-
-## 7. Sécurité
+## 6. Sécurité
 
 - Aucun secret côté frontend : seul le backend Laravel communique avec Hugging Face.
 - Mots de passe hashés via le cast `hashed` de Laravel.
@@ -134,18 +126,12 @@ curl -i -X DELETE -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/re
 - Validation via Form Requests à chaque endpoint d'écriture.
 - Enveloppe d'erreur JSON cohérente (voir `bootstrap/app.php`).
 
-## 8. Changer de modèle IA
+## 7. Pistes d'amélioration
 
-Modifie `HUGGINGFACE_MODEL` dans le `.env` — n'importe quel classifieur de sentiment Hugging Face renvoyant `[[{label, score}, ...]]` fonctionne. Le service normalise les labels contenant `pos` / `neg` / `neu` (ainsi que le format `LABEL_0/1/2` utilisé par `cardiffnlp`).
-
-## 9. Pistes d'amélioration
-
-- Pagination sur `/api/reviews` pour les gros volumes.
+- Paginaton sur `/api/reviews` pour les gros volumes.
 - Chart.js sur la page statistiques.
 - Dispatcher l'appel HF via une file `dispatch()` pour une création d'avis instantanée, l'analyse se faisant en tâche de fond.
 - Import CSV en masse pour les entreprises ayant un historique d'avis.
 
-## 10. Répartition du travail
 
-- **Wassim RHILANE** — Squelette Laravel, module reviews (CRUD, policy), service IA HuggingFace (endpoint `/analyze`, analyse automatique), base de données (migrations, seeders, factories), tests, scripts de lancement.
-- **Ilyasse DBIZA** — Authentification (Sanctum, rôles, middleware), tableau de bord statistiques, frontend complet (pages HTML, styles, wrapper fetch), documentation (API.md, ce rapport).
+**Auteurs :** Wassim RHILANE, Ilyasse DBIZA
