@@ -332,10 +332,9 @@ Plus the standard Laravel/Sanctum tables: `personal_access_tokens`, `sessions`, 
 
 ## 👥 Authors
 
-| | |
-|---|---|
-| **Wassim RHILANE** | 
-| **Ilyasse DBIZA**  |
+
+| **Wassim RHILANE** 
+| **Ilyasse DBIZA**  
 
 ---
 
