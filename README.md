@@ -334,13 +334,11 @@ Plus the standard Laravel/Sanctum tables: `personal_access_tokens`, `sessions`, 
 
 | | |
 |---|---|
-| **Wassim RHILANE** | Backend, AI integration, API design |
-| **Ilyasse DBIZA**  | Frontend, dashboard, UX |
+| **Wassim RHILANE** | 
+| **Ilyasse DBIZA**  |
 
 ---
 
 <div align="center">
-
-*Built as a final-year project — Laravel 12 · Hugging Face · Vanilla JS.*
 
 </div>
